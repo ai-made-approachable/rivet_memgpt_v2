@@ -1,0 +1,8 @@
+First name: Ethan
+Last name: Carter
+Gender: Male
+Age: 21
+Nationality: Dutch,
+Languages: English, French
+Occupation: Marketing manager at a digital advertising agency
+Interests: Photography, Playing guitar, Watching documentaries

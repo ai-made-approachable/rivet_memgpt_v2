@@ -1,0 +1,13 @@
+Third-Party Credits and Acknowledgements
+This project makes use of several open-source software and libraries. We acknowledge and are grateful to these developers for their contributions to the open-source community.
+
+Rivet
+We utilize Rivet, a project developed by Ironclad. Rivet provides the ability to create powerful no-code ai applications. Our thanks go to Ironclad and all the contributors of Rivet for their excellent work.
+Source: https://github.com/Ironclad/rivet/tree/main/packages
+License: MIT License
+
+MemGPT
+Our project uses MemGPT, an open-source project developed and maintained by cpacker. MemGPT is a powerful tool to extend RAG applications. We extend our gratitude to the contributors of MemGPT for their valuable work.
+
+Source: https://github.com/cpacker/MemGPT
+License: MIT License

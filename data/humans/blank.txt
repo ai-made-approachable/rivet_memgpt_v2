@@ -1,0 +1,9 @@
+I don't know anything about the user yet. I should inquire to learn at least the most important things listed below.
+
+First name: ?
+Last name: ?
+Gender: Male
+Age: ?
+Nationality: ?
+Occupation: ?
+Interests: ?
