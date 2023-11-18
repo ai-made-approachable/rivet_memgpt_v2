@@ -92,12 +92,16 @@ async function populateTable(db, data, ids) {
 
 async function returnData(db) {
     const sql = `SELECT * FROM meta`;
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            console.error(err.message);
-        } else {
-            console.log(row);
-        }
+    return new Promise((resolve, reject) => {
+        db.get(sql, [], (err, row) => {
+            if (err) {
+                console.error(err.message);
+                reject(err);
+            } else {
+                console.log(row);
+                resolve(row); // Resolve with the row data
+            }
+        });
     });
 }
 
@@ -158,4 +162,12 @@ export async function retrieveConfigurations() {
         return fs.statSync(path.join(foldersPath, file)).isDirectory();
     });
     return folderNames;
+}
+
+export async function retrieveData(name) {
+    const dirPath = `${dbPath}/${name}`;
+    const filePath = `${dirPath}/${name}.sql`;
+    const db = await connectToDatabase(filePath);
+    const data = await returnData(db); // Await the data from returnData
+    return data;
 }

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retrieveConfigurations = exports.storeConfiguration = void 0;
+exports.retrieveData = exports.retrieveConfigurations = exports.storeConfiguration = void 0;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -92,13 +92,17 @@ async function populateTable(db, data, ids) {
 }
 async function returnData(db) {
     const sql = `SELECT * FROM meta`;
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            console.error(err.message);
-        }
-        else {
-            console.log(row);
-        }
+    return new Promise((resolve, reject) => {
+        db.get(sql, [], (err, row) => {
+            if (err) {
+                console.error(err.message);
+                reject(err);
+            }
+            else {
+                console.log(row);
+                resolve(row); // Resolve with the row data
+            }
+        });
     });
 }
 async function retrieveFileData(data) {
@@ -158,4 +162,12 @@ async function retrieveConfigurations() {
     return folderNames;
 }
 exports.retrieveConfigurations = retrieveConfigurations;
+async function retrieveData(name) {
+    const dirPath = `${dbPath}/${name}`;
+    const filePath = `${dirPath}/${name}.sql`;
+    const db = await connectToDatabase(filePath);
+    const data = await returnData(db); // Await the data from returnData
+    return data;
+}
+exports.retrieveData = retrieveData;
 //# sourceMappingURL=data.js.map

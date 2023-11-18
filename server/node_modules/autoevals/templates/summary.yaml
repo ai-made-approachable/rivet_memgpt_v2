@@ -1,0 +1,17 @@
+prompt: |-
+  You are comparing a submitted summary of a given text to an expert summary. Here is the data:
+  [BEGIN DATA]
+  ************
+  [Text]: {{input}}
+  ************
+  A: {{expected}}
+  ************
+  B: {{output}}
+  ************
+  [END DATA]
+
+  Compare summary A with summary B. Ignore any differences in style, grammar, or punctuation.
+  Determine which summary better describes the original text.
+choice_scores:
+  "A": 0
+  "B": 1
