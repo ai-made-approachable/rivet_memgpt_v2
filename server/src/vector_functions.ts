@@ -4,10 +4,6 @@ import {
     SimpleDirectoryReader, 
     VectorIndexRetriever, 
     storageContextFromDefaults, 
-    KeywordTableIndex, 
-    Document,
-    KeywordTableRetrieverMode,
-    SimpleIndexStore
 } from "llamaindex"
 
 export async function readDocuments() {

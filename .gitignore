@@ -9,3 +9,4 @@
 *.rivet-data
 .DS_Store
 /storage/*
+/data/databases/*
