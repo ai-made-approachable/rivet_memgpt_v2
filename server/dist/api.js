@@ -5,6 +5,9 @@ import { storeConfiguration, retrieveConfigurations, retrieveData, storeLogin } 
 import { createSystemPrompt, createLoginMessage } from "./system_prompt.js";
 import { runRivet } from "./rivet_runner.js";
 import { updateAssistant } from "./openai_assistants.js";
+import { EventEmitter } from 'events';
+// Event emitter to be able to wait on user reply via webchat
+const eventEmitter = new EventEmitter();
 const readDir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 async function generateOptions() {
@@ -37,7 +40,7 @@ async function chatRequest(request) {
         await updateAssistant(assistantId, tools, systemPrompt);
         const lastLogin = await storeLogin(request.name);
         const loginMessage = await createLoginMessage(lastLogin);
-        const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools);
+        const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools, eventEmitter);
         return response;
     }
     else {
@@ -80,14 +83,21 @@ export class serveApi {
             });
             // chat = Converse with the llm. start is true, when the conversation is started
             app.post('/chat', async (req, res) => {
-                if (req.body.name && req.body.start && req.body.message) {
+                if (req.body.name && req.body.message) {
                     let result = {};
-                    result = await chatRequest(req.body);
-                    if (!result) {
-                        return res.status(400).send({ status: "Configuration does not exist" });
+                    if (req.body.start) {
+                        result = await chatRequest(req.body);
+                        if (!result) {
+                            return res.status(400).send({ status: "Configuration does not exist" });
+                        }
+                        else {
+                            // In this case we need to get rivet going!
+                            return res.status(200).send({ status: "success", ...result });
+                        }
                     }
                     else {
-                        // In this case we need to get rivet going!
+                        eventEmitter.emit('apiCallComplete', req.body.message);
+                        //result = await chatRequest(req.body)
                         return res.status(200).send({ status: "success", ...result });
                     }
                 }

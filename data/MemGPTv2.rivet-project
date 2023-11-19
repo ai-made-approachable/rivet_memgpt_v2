@@ -267,7 +267,13 @@ data:
         description: ""
         id: M8f9_EtVlM3nq22w6KAMK
         name: tools/no_tool_called
-      nodes: {}
+      nodes:
+        '[oGEEZpNagL3C8WlsV-r95]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 488/322/342/93/var(--node-color-3)/var(--grey-darkish)
     Miv5UiPzBGOo6qWDtbXRI:
       metadata:
         description: ""
@@ -338,6 +344,12 @@ data:
           outgoingConnections:
             - output->"Graph Input" WmWgcZLm-PqQGnetgKJPK/default
           visualData: -245.9394050934583/384.28756839616926/330/15//
+        '[EzSvyT_QqD4BP7WHKjLBc]:if "If"':
+          data:
+            unconnectedControlFlowExcluded: true
+          outgoingConnections:
+            - output->"Subgraph" LVwJVwJLQaRpKJZoGutW4/assistant_id
+          visualData: 1031.2022180297563/498.5036423741075/155/36//
         '[KWC97Wi6mU_3TKGPETsqe]:text "Text"':
           data:
             text: "{{input}}"
@@ -391,6 +403,7 @@ data:
             id: start
             useDefaultValueInput: true
           outgoingConnections:
+            - data->"If" EzSvyT_QqD4BP7WHKjLBc/if
             - data->"Subgraph" -nWUese1mQDsTrdRDK-tX/start
           visualData: 341/964/330/14/var(--node-color-3)/var(--grey-darkish)
         '[_DvvNQOotpvanc6wjLgp7]:text "Text"':
@@ -413,7 +426,7 @@ data:
             id: assistant_id
             useDefaultValueInput: true
           outgoingConnections:
-            - data->"Subgraph" LVwJVwJLQaRpKJZoGutW4/assistant_id
+            - data->"If" EzSvyT_QqD4BP7WHKjLBc/value
           visualData: 341/564/330/12/var(--node-color-3)/var(--grey-darkish)
         '[o6dyk7REVVl90rA7fOe9v]:boolean "Bool"':
           data:
@@ -433,76 +446,128 @@ data:
         id: PargvpAg6RmsWlLAeAXI2
         name: tools/send_message
       nodes:
+        '[2320movRo0rIyBAJrjvxx]:externalCall "External Call"':
+          data:
+            functionName: wait_for_response
+            useErrorOutput: false
+            useFunctionNameInput: false
+          outgoingConnections:
+            - result->"User reply" 8wNRag_-SWBpNygtWINC3/user_reply
+          visualData: 1303.612566390274/476.99128136546994/180/109//
         '[8wNRag_-SWBpNygtWINC3]:object "User reply"':
           data:
             jsonTemplate: |
               { 
                 "success": true, 
-                "user_reply": "user reply"
+                "user_reply": {{user_reply}}
               }
-          visualData: 563.8597807823346/698.8823531071909/230/49//
+          outgoingConnections:
+            - output->"Graph Output" hv145nphkn2uun8M2fKGz/value
+          visualData: 1575.2370971205123/465.31565795284934/230/108//
+        '[B-cmLFuAKjBdqKDbaQFhR]:raiseEvent "Raise Event"':
+          data:
+            eventName: return_response
+            useEventNameInput: false
+          outgoingConnections:
+            - result->"External Call" 2320movRo0rIyBAJrjvxx/arguments
+          visualData: 1020.8845493156816/475.42316221817754/180/97//
         '[Pl26wfch1ijpk1y5GrHvX]:graphInput "Graph Input"':
           data:
             dataType: object
             id: input
             useDefaultValueInput: true
           outgoingConnections:
-            - data->"Raise Event" gkCaxPuLWk8bNW7h40HM6/data
-          visualData: 580.1973114992543/450.3184929140575/342/43/var(--node-color-3)/var(--grey-darkish)
-        '[gkCaxPuLWk8bNW7h40HM6]:raiseEvent "Raise Event"':
+            - data->"Raise Event" B-cmLFuAKjBdqKDbaQFhR/data
+          visualData: 583.5499434871157/473.7869168290871/342/93/var(--node-color-3)/var(--grey-darkish)
+        '[hv145nphkn2uun8M2fKGz]:graphOutput "Graph Output"':
           data:
-            eventName: return_response
-            useEventNameInput: false
-          outgoingConnections:
-            - result->"Abort Graph" vAH7OboOR-cBpJW0_lSt_/data
-          visualData: 1085.493797243981/450.3184929140575/180/45//
-        '[vAH7OboOR-cBpJW0_lSt_]:abortGraph "Abort Graph"':
-          data:
-            errorMessage: ""
-            successfully: true
-          visualData: 1414.5783445419324/468.9899565905371/230/47//
+            dataType: string
+            id: output
+          visualData: 1900.2162577398406/498.5407533502636/330/114/var(--node-color-4)/var(--grey-darkish)
     XgZQAV3bCt0PneS_7Xa3g:
       metadata:
         description: ""
         id: XgZQAV3bCt0PneS_7Xa3g
         name: tools/recall_memory_search_date
-      nodes: {}
+      nodes:
+        '[p4pZU4hAIP-scWp_NRicS]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 493/313/342/93/var(--node-color-3)/var(--grey-darkish)
     __tynPR9G3PuTV5esUZPx:
       metadata:
         description: ""
         id: __tynPR9G3PuTV5esUZPx
         name: tools/recall_memory_search
-      nodes: {}
+      nodes:
+        '[faEZiTCgZvr3ExeLzMQDq]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 470/327/342/93/var(--node-color-3)/var(--grey-darkish)
     aIag-ASSYsZufPlinIcFJ:
       metadata:
         description: ""
         id: aIag-ASSYsZufPlinIcFJ
         name: tools/core_memory_append
-      nodes: {}
+      nodes:
+        '[YrX8SHAw7jxnGUBEL3TFa]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 447/381/342/93/var(--node-color-3)/var(--grey-darkish)
     c_cw9eaegXZBNBOm6J80R:
       metadata:
         description: ""
         id: c_cw9eaegXZBNBOm6J80R
         name: tools/unknown_tool
-      nodes: {}
+      nodes:
+        '[_QNz_vi6mi7RLLrNNorhE]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 436/359/342/93/var(--node-color-3)/var(--grey-darkish)
     l-eFuPjCFpo2eITQ-SU68:
       metadata:
         description: ""
         id: l-eFuPjCFpo2eITQ-SU68
         name: tools/archival_memory_insert
-      nodes: {}
+      nodes:
+        '[mPKyyocbExy23u239c3vI]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 438/333/342/93/var(--node-color-3)/var(--grey-darkish)
     laSuxCiVV63SAQb7gHVY1:
       metadata:
         description: ""
         id: laSuxCiVV63SAQb7gHVY1
         name: tools/core_memory_replace
-      nodes: {}
+      nodes:
+        '[F28NVMpqGXybu7N6XT6Cm]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 441/362/342/93/var(--node-color-3)/var(--grey-darkish)
     nNySEIwq9nM_dYwwCV__V:
       metadata:
         description: ""
         id: nNySEIwq9nM_dYwwCV__V
         name: tools/archival_memory_search
-      nodes: {}
+      nodes:
+        '[7cY7fz7cJlNr-_QSQX1rU]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          visualData: 408/349/342/93/var(--node-color-3)/var(--grey-darkish)
     xtFhoBuQAOYk4V7aQtFsY:
       metadata:
         description: ""
@@ -590,7 +655,7 @@ data:
             useMetadataInput: false
             useModelInput: true
             useThreadIdInput: true
-          visualData: 1030.474162136923/748.3574579032838/430/24//
+          visualData: 713.321952770169/715.7981056108795/430/28//
         '[wMT6R70ts9zYaCvfyNdd2]:graphInput "Graph Input"':
           data:
             dataType: string

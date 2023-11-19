@@ -1,13 +1,14 @@
 import { runGraphInFile, startDebuggerServer, DataValue } from '@ironclad/rivet-node';
 import { EventEmitter } from 'events';
 import { plugins, globalRivetNodeRegistry } from '@ironclad/rivet-node';
+
 globalRivetNodeRegistry.registerPlugin(plugins.openai);
 EventEmitter.defaultMaxListeners = 20;
 
 const project = './data/memGPTv2';
 const debuggerServer = startDebuggerServer({});
 
-export async function runRivet(threadId, assistantId, message, start, loginMessage, gptModel, tools) {
+export async function runRivet(threadId, assistantId, message, start, loginMessage, gptModel, tools, eventEmitter) {
   const graph = 'OSUXYaAdV7-UHA0WIUDft'
   return new Promise(async (resolve, reject) => {
     try {
@@ -24,7 +25,16 @@ export async function runRivet(threadId, assistantId, message, start, loginMessa
           // "tools": { "type": "gpt-function[]", "value": tools },
         },
         context: {},
-        externalFunctions: {},
+        externalFunctions: {
+          wait_for_response: async (_context, response) => {
+            return new Promise((resolve, reject) => {
+              eventEmitter.once('apiCallComplete', (data) => {
+                console.log('apiCallComplete event received:', data);
+                resolve({ type: "string", value: data });
+              });
+            });
+          }
+        },
         onUserEvent: {
           return_response: (data: DataValue) => {
             resolve(data.value);
