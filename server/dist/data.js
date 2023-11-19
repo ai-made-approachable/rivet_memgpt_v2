@@ -1,13 +1,7 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.retrieveData = exports.retrieveConfigurations = exports.storeConfiguration = void 0;
-const sqlite3_1 = __importDefault(require("sqlite3"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const openai_assistants_1 = require("./openai_assistants");
+import sqlite3 from "sqlite3";
+import fs from "fs";
+import path from "path";
+import { createIds } from "./openai_assistants.js";
 let dbPath = "./data/databases";
 let filesPath = "./data";
 /*
@@ -17,11 +11,11 @@ async function createDatabaseFile(name) {
     const dirPath = `${dbPath}/${name}`;
     const filePath = `${dirPath}/${name}.sql`;
     return new Promise((resolve, reject) => {
-        fs_1.default.mkdir(dirPath, { recursive: true }, (err) => {
+        fs.mkdir(dirPath, { recursive: true }, (err) => {
             if (err) {
                 reject(err);
             }
-            fs_1.default.writeFile(filePath, "", (err) => {
+            fs.writeFile(filePath, "", (err) => {
                 if (err) {
                     reject(err);
                 }
@@ -35,7 +29,7 @@ async function createDatabaseFile(name) {
 }
 async function connectToDatabase(path) {
     return new Promise((resolve, reject) => {
-        const db = new sqlite3_1.default.Database(path, (err) => {
+        const db = new sqlite3.Database(path, (err) => {
             if (err) {
                 console.error('Could not connect to database', err);
                 reject(err);
@@ -50,7 +44,7 @@ async function connectToDatabase(path) {
 async function checkDatabaseFile(name) {
     const dirPath = `${dbPath}/${name}`;
     const filePath = `${dirPath}/${name}.sql`;
-    if (fs_1.default.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
         //console.log("File exists")
         return true;
     }
@@ -59,7 +53,7 @@ async function checkDatabaseFile(name) {
         return filePath;
     }
 }
-async function createTable(db) {
+async function createMetaTable(db) {
     const sql = `CREATE TABLE IF NOT EXISTS meta (human, persona, prompt, tool, gptmodel, thread, assistant)`;
     return new Promise((resolve, reject) => {
         db.run(sql, (err) => {
@@ -76,7 +70,7 @@ async function createTable(db) {
 }
 async function populateTable(db, data, ids) {
     const sql = `INSERT INTO meta (human, persona, prompt, tool, gptmodel, assistant, thread) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [data.human, data.persona, data.prompt, data.tool, data.gptmodel, ids["assistantId"], ids["threadId"]];
+    const params = [data.human, data.persona, data.prompt, JSON.stringify(data.tool), data.gptmodel, ids["assistantId"], ids["threadId"]];
     return new Promise((resolve, reject) => {
         db.run(sql, params, function (err) {
             if (err) {
@@ -114,9 +108,9 @@ async function retrieveFileData(data) {
     ];
     const fileContent = {};
     files.forEach(({ name, folder, file }) => {
-        const filePath = path_1.default.join(filesPath, folder, file);
-        if (fs_1.default.existsSync(filePath)) {
-            const fileData = fs_1.default.readFileSync(filePath, 'utf8');
+        const filePath = path.join(filesPath, folder, file);
+        if (fs.existsSync(filePath)) {
+            const fileData = fs.readFileSync(filePath, 'utf8');
             fileContent[name] = name === 'tool' ? JSON.parse(fileData) : fileData;
         }
         else {
@@ -129,20 +123,79 @@ async function storeData(data) {
     // Create new database file and database entries
     const newPath = await createDatabaseFile(data.name);
     const db = await connectToDatabase(newPath);
-    await createTable(db);
+    await createMetaTable(db);
     // Retrieve content of the files before populating the database
     const content = await retrieveFileData(data);
     content["gptmodel"] = data.gptmodel;
     // Get thread id from rivet. Then extend variables passed to populateTable by thread id
-    const ids = await (0, openai_assistants_1.createIds)(data.name, data.gptmodel);
+    const ids = await createIds(data.name, data.gptmodel);
     console.log(ids);
     await populateTable(db, content, ids);
     await returnData(db);
 }
+async function getDatabaseConnection(name) {
+    const dirPath = `${dbPath}/${name}`;
+    const filePath = `${dirPath}/${name}.sql`;
+    const db = await connectToDatabase(filePath);
+    return db;
+}
+async function createLoginTable(db) {
+    const sql_create = `CREATE TABLE IF NOT EXISTS login (id INTEGER PRIMARY KEY AUTOINCREMENT, lastLogin TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+    await new Promise((resolve, reject) => {
+        db.run(sql_create, (err) => {
+            if (err) {
+                console.error('Could not create table', err);
+                reject(err);
+            }
+            else {
+                resolve(void 0);
+            }
+        });
+    });
+    const sql_insert = `Insert into login (lastLogin) values (CURRENT_TIMESTAMP)`;
+    await new Promise((resolve, reject) => {
+        db.run(sql_insert, (err) => {
+            if (err) {
+                console.error('Could not insert data', err);
+                reject(err);
+            }
+            else {
+                resolve(void 0);
+            }
+        });
+    });
+}
+async function getLastLogin(db) {
+    const checkTableSql = `SELECT name FROM sqlite_master WHERE type='table' AND name='login';`;
+    return new Promise((resolve, reject) => {
+        db.get(checkTableSql, [], (err, row) => {
+            if (err) {
+                reject(err);
+            }
+            else if (row === undefined) {
+                resolve(null);
+            }
+            else {
+                const sql = `SELECT lastLogin FROM login ORDER BY id DESC LIMIT 1`;
+                db.get(sql, [], (err, row) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else if (row === undefined) {
+                        resolve(null);
+                    }
+                    else {
+                        resolve(row.lastLogin);
+                    }
+                });
+            }
+        });
+    });
+}
 /*
     External functions
 */
-async function storeConfiguration(data) {
+export async function storeConfiguration(data) {
     const filePath = await checkDatabaseFile(data.name);
     if (filePath === true) {
         // Don't overwrite database file and return error in API
@@ -153,21 +206,27 @@ async function storeConfiguration(data) {
         return true;
     }
 }
-exports.storeConfiguration = storeConfiguration;
-async function retrieveConfigurations() {
-    const foldersPath = path_1.default.join(dbPath, "/");
-    const folderNames = fs_1.default.readdirSync(foldersPath).filter((file) => {
-        return fs_1.default.statSync(path_1.default.join(foldersPath, file)).isDirectory();
+export async function retrieveConfigurations() {
+    const foldersPath = path.join(dbPath, "/");
+    const folderNames = fs.readdirSync(foldersPath).filter((file) => {
+        return fs.statSync(path.join(foldersPath, file)).isDirectory();
     });
     return folderNames;
 }
-exports.retrieveConfigurations = retrieveConfigurations;
-async function retrieveData(name) {
-    const dirPath = `${dbPath}/${name}`;
-    const filePath = `${dirPath}/${name}.sql`;
-    const db = await connectToDatabase(filePath);
+export async function retrieveData(name) {
+    const db = await getDatabaseConnection(name);
     const data = await returnData(db); // Await the data from returnData
     return data;
 }
-exports.retrieveData = retrieveData;
+export async function storeLogin(name) {
+    const db = await getDatabaseConnection(name);
+    const lastLogin = await getLastLogin(db);
+    if (!lastLogin) {
+        await createLoginTable(db);
+        return null;
+    }
+    else {
+        return lastLogin;
+    }
+}
 //# sourceMappingURL=data.js.map

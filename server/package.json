@@ -1,6 +1,7 @@
 {
   "name": "rivet-memgpt-v2",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "/main.ts",
   "author": "",

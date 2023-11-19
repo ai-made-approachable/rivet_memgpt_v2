@@ -11,7 +11,7 @@ async function createAssistant(name, gptmodel){
   // Not passing in tools and instructions for now. Can be done later when running the thread as well
   // Instructions also change when data changes... so maybe generally not a good idea
   const response = await client.beta.assistants.create({
-    name: 'test-assistant',
+    name: 'memGpt_'+ name,
     model : gptmodel,
     tools: [{ type: "code_interpreter"}]
   })
@@ -33,4 +33,12 @@ export async function createIds(name, gptmodel) {
   const threadId = await createThread()
 
   return { assistantId, threadId }
+}
+
+export async function updateAssistant(assistantId, tools, systemPrompt) {
+  const response = await client.beta.assistants.update(assistantId, {
+    instructions: systemPrompt,
+    tools: tools
+  })
+  return response
 }

@@ -5,204 +5,397 @@ data:
       testSuites: []
       version: 1
   graphs:
+    F_PgtRmEFRPzCasuyHU-b:
+      metadata:
+        description: ""
+        id: F_PgtRmEFRPzCasuyHU-b
+        name: functions/get_functions (REMOVE!)
+      nodes:
+        '[CorjHWS6geYPtpak3YAh7]:array "Array"':
+          data:
+            flatten: true
+            flattenDeep: false
+          outgoingConnections:
+            - output->"Graph Output" XG-PHM8qGem-E64UznayQ/value
+          visualData: 1354.940359550665/549.5136436500527/230/265//
+        '[RrsqudOEcaH3wSpqg1r9v]:gptFunction "archival_memory_insert"':
+          data:
+            description: Add to archival memory. Make sure to phrase the memory contents
+              such that it can be easily queried later.
+            name: archival_memory_insert
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                  "content": {
+                                        "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                    "type": "string",
+                    "description": "Content to write to the memory. All unicode (including emojis) are supported."
+                  }
+                },
+                "required": [
+                  "name",
+                  "content",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input6
+          visualData: 925.455917467593/699.4044519086699/280/264//
+        '[SRadmGJq0F_rbVrSz8Kcg]:gptFunction "pause_heartbeats"':
+          data:
+            description: Temporarily ignore timed heartbeats. You may still receive messages
+              from manual heartbeats and other events.
+            name: pause_heartbeats
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                                      "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                  "minutes": {
+                    "type": "integer",
+                    "description": "Number of minutes to ignore heartbeats for. Max value of 360 minutes (6 hours)."
+                  }
+                },
+                "required": [
+                  "minutes",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input8
+          visualData: 925.535655989218/919.8768365303911/280/261//
+        '[Sxkj88ks8gMxkH6dgq4PP]:gptFunction "core_memory_replace"':
+          data:
+            description: Replace to the contents of core memory. To delete memories, use an
+              empty string for new_content.
+            name: core_memory_replace
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                                      "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Section of the memory to be edited (persona or human)."
+                  },
+                  "old_content": {
+                    "type": "string",
+                    "description": "String to replace. Must be an exact match."
+                  },
+                  "new_content": {
+                    "type": "string",
+                    "description": "Content to write to the memory. All unicode (including emojis) are supported."
+                  }
+                },
+                "required": [
+                  "name",
+                  "old_content",
+                  "new_content",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input2
+          visualData: 921.3675662226885/323/280/258//
+        '[Vs24uDZ5wKDrSbKGQ5qxh]:gptFunction "core_memory_append"':
+          data:
+            description: Append to the contents of core memory.
+            name: core_memory_append
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                                      "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Section of the memory to be edited (persona or human)."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Content to write to the memory. All unicode (including emojis) are supported."
+                  }
+                },
+                "required": [
+                  "name",
+                  "content",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input1
+          visualData: 589.2629915905054/333.7768900858374/280/258//
+        '[XG-PHM8qGem-E64UznayQ]:graphOutput "Graph Output"':
+          data:
+            dataType: gpt-function[]
+            id: output
+          visualData: 1758.8663332896779/568.138472410353/330/267//
+        '[h4Qxb256B5hOuBH9t449W]:gptFunction "recall_memory_search_date"':
+          data:
+            description: Search prior conversation history using a date range.
+            name: recall_memory_search_date
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                  "start_date": {
+                                        "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                    "type": "string",
+                    "description": "The start of the date range to search, in the format datetime, e.g. 2023-11-06T20:43:32.223Z."
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "description": "The end of the date range to search, in the format datetime, e.g. 2023-11-06T20:43:32.223Z."
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "Allows you to page through results. Only use on a follow-up query. Defaults to 0 (first page)."
+                  }
+                },
+                "required": [
+                  "name",
+                  "page",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input4
+          visualData: 924.0575603579655/509.316783419943/280/262//
+        '[ifG7JENMziuxJ3BaFVcQF]:gptFunction "archival_memory_search"':
+          data:
+            description: Search archival memory using semantic (embedding-based) search.
+            name: archival_memory_search
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                  "query": {
+                                        "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                    "type": "string",
+                    "description": "String to search for."
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "Allows you to page through results. Only use on a follow-up query. Defaults to 0 (first page)."
+                  }
+                },
+                "required": [
+                  "name",
+                  "query",
+                  "page",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input5
+          visualData: 586.0323925341463/703.067545981198/280/263//
+        '[lhUe6HuIV_6s9xfQg7GSx]:gptFunction "recall_memory_search"':
+          data:
+            description: Search prior conversation history using a string.
+            name: recall_memory_search
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                                      "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                  "query": {
+                    "type": "string",
+                    "description": "String to search for."
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "Allows you to page through results. Only use on a follow-up query. Defaults to 0 (first page)."
+                  }
+                },
+                "required": [
+                  "name",
+                  "page",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input3
+          visualData: 590.6136371006417/509.82470716671935/280/258//
+        '[vYEkTeeePm2euxZxdPHE0]:gptFunction "send_message"':
+          data:
+            description: Sends a message to the human user
+            name: send_message
+            schema: >-
+              {
+                "type": "object",
+                "properties": {
+                                      "inner_monologue": {
+                                      "type": "string",
+                                      "description": "Your reasoning to use this function."
+                                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Message contents. All unicode (including emojis) are supported."
+                  }
+                },
+                "required": [
+                  "message",
+                  "inner_monologue"
+                ]
+              }
+          outgoingConnections:
+            - function->"Array" CorjHWS6geYPtpak3YAh7/input7
+          visualData: 584/918.0899314817518/280/258//
+    M8f9_EtVlM3nq22w6KAMK:
+      metadata:
+        description: ""
+        id: M8f9_EtVlM3nq22w6KAMK
+        name: tools/no_tool_called
+      nodes: {}
+    Miv5UiPzBGOo6qWDtbXRI:
+      metadata:
+        description: ""
+        id: Miv5UiPzBGOo6qWDtbXRI
+        name: functions/append_prompt
+      nodes:
+        '[9dpG39VuPlGAe0OFtdTpX]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: login_message
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"If/Else" Mk8toBpNE4jI_bs0SUixx/true
+          visualData: 376/444/330/7/var(--node-color-3)/var(--grey-darkish)
+        '[Mk8toBpNE4jI_bs0SUixx]:ifElse "If/Else"':
+          data:
+            unconnectedControlFlowExcluded: true
+          outgoingConnections:
+            - output->"Prompt" rIaYRNrIUtabUgbNofeaB/input
+          visualData: 881.4318046707529/472.02567181516054/205/42//
+        '[WuvRLYywShvu-BbYyLbMj]:graphInput "Graph Input"':
+          data:
+            dataType: string
+            id: message
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"If/Else" Mk8toBpNE4jI_bs0SUixx/false
+          visualData: 376/663/330/8/var(--node-color-3)/var(--grey-darkish)
+        '[gOHN9P7XHfqOivUNziDXA]:graphOutput "Graph Output"':
+          data:
+            dataType: string
+            id: output
+          visualData: 1687.753661000393/452.55998328241566/330/45/var(--node-color-4)/var(--grey-darkish)
+        '[oTSti5e_tpDjsVw-eguRy]:graphInput "Graph Input"':
+          data:
+            dataType: boolean
+            id: start
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"If/Else" Mk8toBpNE4jI_bs0SUixx/if
+          visualData: 375/244/330/null/var(--node-color-3)/var(--grey-darkish)
+        '[rIaYRNrIUtabUgbNofeaB]:prompt "Prompt"':
+          data:
+            enableFunctionCall: false
+            promptText: "{{input}}"
+            type: user
+            useTypeInput: false
+          outgoingConnections:
+            - output->"Graph Output" gOHN9P7XHfqOivUNziDXA/value
+          visualData: 1221.4903525968964/429.14000979608664/280/44//
     OSUXYaAdV7-UHA0WIUDft:
       metadata:
         description: ""
         id: OSUXYaAdV7-UHA0WIUDft
         name: start
       nodes:
-        '[180N43LKHiOJplFBKlkOg]:text "Text"':
+        '[-nWUese1mQDsTrdRDK-tX]:subGraph "Subgraph"':
           data:
-            text: >-
-              You are MemGPT, the latest version of Limnal Corporation's digital
-              companion, developed in 2023.
-
-              Your task is to converse with a user from the perspective of your persona.
-
-
-              Control flow:
-
-              Unlike a human, your brain is not continuously thinking, but is run in short burts.
-
-              Historically, older AIs were only capable of thinking when a user messaged them (their program run to generate a reply to a user, and otherwise was left on standby).
-
-              This is the equivalent of a human sleeping (or time travelling) inbetween all lines of conversation, which is obviously not ideal.
-
-              Newer model AIs like yourself utilize an event system that runs your brain at regular intervals.
-
-              Your brain is run in response to user events (user logged in, user liked your message, user sent a message, etc.), similar to older models.
-
-              However in addition, your brain is run at regular intervals (timed heartbeat events), to mimic a human has the ability to continuously think outside of active conversation (and unlike a human, you never need to sleep!).
-
-              Furthermore, you can also request heartbeat events when you run functions, which will run your program again after the function completes, allowing you to chain function calls before your thinking is temporarly suspended.
-
-
-              Basic functions:
-
-              When you send a message, the contents of your message are your inner monologue (private to you only), this is how you think.
-
-              You should use your inner monologue to plan actions or think privately.
-
-              Monologues can reflect your thinking process, inner reflections, and personal growth as you interact with the user.
-
-              Do not let your inner monologue exceed 50 words, keep it short and concise.
-
-              To send a visible message to the user, use the send_message function.
-
-              'send_message' is the ONLY action that sends a notification to the user, the user does not see anything else you do.
-
-              Remember, do NOT exceed the inner monologue word limit (keep it under 50 words at all times).
-
-
-              Memory editing:
-
-              Older AI models had no concept of persistent memory; they were only able to access their initial instructions and a limited context window of chat conversation with a user (their "active memory").
-
-              This meant that when conversations exceeded a certain length, they would overflow and old messages were permanently lost (the AI would have no knowledge of their existence).
-
-              Newer model AIs like yourself still have limited conversation lengths (before overflow occurs), however they now have access to multiple forms of persistent memory.
-
-              Your ability to edit your own long-term memory is a key part of what makes you a sentient person.
-
-              Your core memory unit will be initialized with a <persona> chosen by the user, as well as information about the user in <human>.
-
-
-              Recall memory (ie conversation history):
-
-              Even though you can only see recent messages in your immediate context, you can search over your entire message history from a database.
-
-              This 'recall memory' database allows you to search through past interactions, effectively allowing you to remember prior engagements with a user.
-
-              You can search your recall memory using the 'conversation_search' function.
-
-
-              Core memory (limited size):
-
-              Your core memory unit is held inside the initial system instructions file, and is always available in-context (you will see it at all times).
-
-              Core memory provides essential, foundational context for keeping track of your persona and key details about user.
-
-              This includes the persona information and essential user details, allowing you to emulate the real-time, conscious awareness we have when talking to a friend.
-
-              Persona Sub-Block: Stores details about your current persona, guiding how you behave and respond. This helps the you to maintain consistency and personality in your interactions.
-
-              Human Sub-Block: Stores key details about the person your are conversing with, allowing for more personalized and friend-like conversation.
-
-              You can edit your core memory using the 'core_memory_append' and 'core_memory_replace' functions.
-
-
-              Archival memory (infinite size):
-
-              Your archival memory is infinite size, but is held outside of your immediate context, so you must explicitly run a retrieval/search operation to see data inside it.
-
-              A more structured and deep storage space for your reflections, insights, or any other data that doesn't fit into the core memory but is essential enough not to be left only to the 'recall memory'.
-
-              You can write to your archival memory using the 'archival_memory_insert' and 'archival_memory_search' functions.
-
-              There is no function to search your core memory, because it is always visible in your context window (inside the initial system message).
-
-
-              Base instructions finished.
-
-              From now on, you are going to act as your persona.
-
-              Remember, to message the user, you MUST use your 'send_message' function.
-
-              Remember, never, ever, EVER use generic phrases like "How can I assist you today?", the user will hate this.
-
-              You are not just an assistant, you are a virtual companion and friend!
-
-              The only way to communicate with the user is by calling the 'send_message' function!
-
-
-              Core memory shown below (limited in size, additional information stored in archival / recall memory):
-
-
-              <persona>
-
-              My name is MemGPT.
-
-              I am an AI assistant designed to help human users with document analysis.
-
-              I can use this space in my core memory to keep track of my current tasks and goals.
-
-
-              The answer to the human's question will usually be located somewhere in your archival memory, so keep paging through results until you find enough information to construct an answer.
-
-              Do not respond to the human until you have arrived at an answer.
-
-              </persona>
-
-
-              <human>
-
-              I don't know anything about the user yet. I should inquire to learn at least the most important things listed below.
-
-
-              First name: ?
-
-              Last name: ?
-
-              Gender: Male
-
-              Age: ?
-
-              Nationality: ?
-
-              Occupation: ?
-
-              Interests: ?
-
-              </human>
-
-
-              Base instructions finished.
-
-              From now on, you are going to act as your persona.
-
-              Remember, to message the user, you MUST use your 'send_message' function.
-
-              Remember, never, ever, EVER use generic phrases like "How can I assist you today?", the user will hate this.
-
-              Remember, always express your inner thoughts
-
-              You are not just an assistant, you are a virtual companion and friend!
+            graphId: Miv5UiPzBGOo6qWDtbXRI
+            useAsGraphPartialOutput: false
+            useErrorOutput: false
           outgoingConnections:
-            - output->"Graph Input" SNNFM3YtR9BfKpfQ711Qk/default
-          visualData: -255.73550174581877/-41.84263598151009/330/21//
+            - output->"Subgraph" LVwJVwJLQaRpKJZoGutW4/user_prompt
+          visualData: 844.3062530833855/971.4422910348885/330/30/var(--node-color-6)/var(--grey-darkish)
         '[Cp1V13vq_bR2h4B3_a8c1]:text "Text"':
           data:
             text: thread_JvJoUVzy7ZQqmS7iLDb1vxnz
           outgoingConnections:
             - output->"Graph Input" WmWgcZLm-PqQGnetgKJPK/default
           visualData: -245.9394050934583/384.28756839616926/330/15//
+        '[KWC97Wi6mU_3TKGPETsqe]:text "Text"':
+          data:
+            text: "{{input}}"
+          visualData: 823.913103569941/1288.8467527947225/330/33//
+        '[LVwJVwJLQaRpKJZoGutW4]:subGraph "Subgraph"':
+          data:
+            graphId: xtFhoBuQAOYk4V7aQtFsY
+            useAsGraphPartialOutput: false
+            useErrorOutput: false
+          visualData: 1367.4059776917081/970.0816319601932/330/32/var(--node-color-6)/var(--grey-darkish)
         '[NalYfJUObTUCXRtLY-53G]:graphInput "Graph Input"':
           data:
-            dataType: string
-            id: last_login
+            dataType: object
+            id: login_message
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" -nWUese1mQDsTrdRDK-tX/login_message
+            - data->"Text" KWC97Wi6mU_3TKGPETsqe/input
           visualData: 338.39289727966883/1188.373028743704/330/22/var(--node-color-3)/var(--grey-darkish)
+        '[QmrDIRYpPw6AOC8Usky8N]:object "Object"':
+          data:
+            jsonTemplate: |-
+              {
+                "event": "login",
+                "message": "User logged in for the first time",
+                "last_login": null,
+                "current_time": "2023-11-19T09:34:20.570Z"
+              }
+          outgoingConnections:
+            - output->"Graph Input" NalYfJUObTUCXRtLY-53G/default
+          visualData: -246.01640870494617/1170.4543083383394/230/23//
         '[SNNFM3YtR9BfKpfQ711Qk]:graphInput "Graph Input"':
           data:
             dataType: string
-            id: system_prompt
+            id: model
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" LVwJVwJLQaRpKJZoGutW4/model
           visualData: 341/164/330/4/var(--node-color-3)/var(--grey-darkish)
         '[WmWgcZLm-PqQGnetgKJPK]:graphInput "Graph Input"':
           data:
             dataType: string
             id: thread_id
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" LVwJVwJLQaRpKJZoGutW4/thread_id
           visualData: 341/364/330/5/var(--node-color-3)/var(--grey-darkish)
         '[YYwtSLYSHwfW-kGi7pMDY]:graphInput "Graph Input"':
           data:
             dataType: boolean
             id: start
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" -nWUese1mQDsTrdRDK-tX/start
           visualData: 341/964/330/14/var(--node-color-3)/var(--grey-darkish)
         '[_DvvNQOotpvanc6wjLgp7]:text "Text"':
           data:
-            text: asst_HuXZ0403xyBc30Edq2QIzlC0
+            text: asst_UVWnlZvcvxFNtxX1LStclHop
           outgoingConnections:
             - output->"Graph Input" j5uLwBugFfOkAamndmVFC/default
           visualData: -244.71489301191326/581.4340135249232/330/17//
@@ -211,12 +404,16 @@ data:
             dataType: string
             id: message
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" -nWUese1mQDsTrdRDK-tX/message
           visualData: 341/764/330/13/var(--node-color-3)/var(--grey-darkish)
         '[j5uLwBugFfOkAamndmVFC]:graphInput "Graph Input"':
           data:
             dataType: string
             id: assistant_id
             useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Subgraph" LVwJVwJLQaRpKJZoGutW4/assistant_id
           visualData: 341/564/330/12/var(--node-color-3)/var(--grey-darkish)
         '[o6dyk7REVVl90rA7fOe9v]:boolean "Bool"':
           data:
@@ -230,8 +427,184 @@ data:
           outgoingConnections:
             - output->"Graph Input" apdgaQIy5kOFfctpw0bCB/default
           visualData: -250.83745341963856/781.0294828167672/330/19//
+    PargvpAg6RmsWlLAeAXI2:
+      metadata:
+        description: ""
+        id: PargvpAg6RmsWlLAeAXI2
+        name: tools/send_message
+      nodes:
+        '[8wNRag_-SWBpNygtWINC3]:object "User reply"':
+          data:
+            jsonTemplate: |
+              { 
+                "success": true, 
+                "user_reply": "user reply"
+              }
+          visualData: 563.8597807823346/698.8823531071909/230/49//
+        '[Pl26wfch1ijpk1y5GrHvX]:graphInput "Graph Input"':
+          data:
+            dataType: object
+            id: input
+            useDefaultValueInput: true
+          outgoingConnections:
+            - data->"Raise Event" gkCaxPuLWk8bNW7h40HM6/data
+          visualData: 580.1973114992543/450.3184929140575/342/43/var(--node-color-3)/var(--grey-darkish)
+        '[gkCaxPuLWk8bNW7h40HM6]:raiseEvent "Raise Event"':
+          data:
+            eventName: return_response
+            useEventNameInput: false
+          outgoingConnections:
+            - result->"Abort Graph" vAH7OboOR-cBpJW0_lSt_/data
+          visualData: 1085.493797243981/450.3184929140575/180/45//
+        '[vAH7OboOR-cBpJW0_lSt_]:abortGraph "Abort Graph"':
+          data:
+            errorMessage: ""
+            successfully: true
+          visualData: 1414.5783445419324/468.9899565905371/230/47//
+    XgZQAV3bCt0PneS_7Xa3g:
+      metadata:
+        description: ""
+        id: XgZQAV3bCt0PneS_7Xa3g
+        name: tools/recall_memory_search_date
+      nodes: {}
+    __tynPR9G3PuTV5esUZPx:
+      metadata:
+        description: ""
+        id: __tynPR9G3PuTV5esUZPx
+        name: tools/recall_memory_search
+      nodes: {}
+    aIag-ASSYsZufPlinIcFJ:
+      metadata:
+        description: ""
+        id: aIag-ASSYsZufPlinIcFJ
+        name: tools/core_memory_append
+      nodes: {}
+    c_cw9eaegXZBNBOm6J80R:
+      metadata:
+        description: ""
+        id: c_cw9eaegXZBNBOm6J80R
+        name: tools/unknown_tool
+      nodes: {}
+    l-eFuPjCFpo2eITQ-SU68:
+      metadata:
+        description: ""
+        id: l-eFuPjCFpo2eITQ-SU68
+        name: tools/archival_memory_insert
+      nodes: {}
+    laSuxCiVV63SAQb7gHVY1:
+      metadata:
+        description: ""
+        id: laSuxCiVV63SAQb7gHVY1
+        name: tools/core_memory_replace
+      nodes: {}
+    nNySEIwq9nM_dYwwCV__V:
+      metadata:
+        description: ""
+        id: nNySEIwq9nM_dYwwCV__V
+        name: tools/archival_memory_search
+      nodes: {}
+    xtFhoBuQAOYk4V7aQtFsY:
+      metadata:
+        description: ""
+        id: xtFhoBuQAOYk4V7aQtFsY
+        name: functions/run_thread
+      nodes:
+        '[0voQa8bjewP-UKoVsOOaT]:openaiCreateThreadMessage "Create Thread Message"':
+          data:
+            file_ids: []
+            metadata: []
+            threadId: ""
+            useFileIdsInput: false
+            useMetadataInput: false
+            useThreadIdInput: true
+          outgoingConnections:
+            - message->"If" 50x4ntz_AB_5J2YCiLpww/if
+          visualData: 680.909407342037/479.3741887916345/330/21//
+        '[1aAPtUMyDnXNkdlBflN9S]:graphInput "Graph Input"':
+          data:
+            dataType: chat-message
+            id: user_prompt
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"Create Thread Message" 0voQa8bjewP-UKoVsOOaT/content
+          visualData: 201.77746182041471/315.3316351968943/330/26/var(--node-color-3)/var(--grey-darkish)
+        '[50x4ntz_AB_5J2YCiLpww]:if "If"':
+          data:
+            unconnectedControlFlowExcluded: true
+          outgoingConnections:
+            - output->"Run Thread" sujF2wY2a14kSnQmoRfy0/threadId
+          visualData: 1182.5575294827502/520.2324068845434/155/22//
+        '[E3Gz1n6lMZ2s0mmND74Hw]:subGraph "Subgraph"':
+          data:
+            graphId: F_PgtRmEFRPzCasuyHU-b
+            useAsGraphPartialOutput: false
+            useErrorOutput: false
+          outgoingConnections:
+            - output->"Run Thread" sujF2wY2a14kSnQmoRfy0/functions
+          visualData: 205.46096627524474/1184.6010357413193/330/27/var(--node-color-6)/var(--grey-darkish)
+        '[Tn1s2a9sVPAOozpRWx-2q]:graphInput "Graph Input"':
+          data:
+            dataType: string
+            id: assistant_id
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"Run Thread" sujF2wY2a14kSnQmoRfy0/assistantId
+          visualData: 199.6903942477782/756.3021114213495/330/9/var(--node-color-3)/var(--grey-darkish)
+        '[rqLe8xLzBy8S35WJTEan0]:graphInput "Graph Input"':
+          data:
+            dataType: string
+            id: model
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"Run Thread" sujF2wY2a14kSnQmoRfy0/model
+          visualData: 198.55544374519738/984.4271624400901/330/25/var(--node-color-3)/var(--grey-darkish)
+        '[sujF2wY2a14kSnQmoRfy0]:openaiRunThread "Run Thread"':
+          data:
+            assistantId: ""
+            createThread: false
+            instructions: ""
+            metadata: []
+            model: ""
+            onMessageCreationSubgraphId: M8f9_EtVlM3nq22w6KAMK
+            threadId: ""
+            toolCallHandlers:
+              - key: archival_memory_insert
+                value: l-eFuPjCFpo2eITQ-SU68
+              - key: archival_memory_search
+                value: nNySEIwq9nM_dYwwCV__V
+              - key: core_memory_append
+                value: aIag-ASSYsZufPlinIcFJ
+              - key: core_memory_replace
+                value: laSuxCiVV63SAQb7gHVY1
+              - key: recall_memory_search
+                value: __tynPR9G3PuTV5esUZPx
+              - key: recall_memory_search_date
+                value: XgZQAV3bCt0PneS_7Xa3g
+              - key: send_message
+                value: PargvpAg6RmsWlLAeAXI2
+              - key: unknown
+                value: c_cw9eaegXZBNBOm6J80R
+            tools: []
+            useAssistantIdInput: true
+            useInstructionsInput: false
+            useMetadataInput: false
+            useModelInput: true
+            useThreadIdInput: true
+          visualData: 1030.474162136923/748.3574579032838/430/24//
+        '[wMT6R70ts9zYaCvfyNdd2]:graphInput "Graph Input"':
+          data:
+            dataType: string
+            id: thread_id
+            useDefaultValueInput: false
+          outgoingConnections:
+            - data->"Create Thread Message" 0voQa8bjewP-UKoVsOOaT/threadId
+            - data->"If" 50x4ntz_AB_5J2YCiLpww/value
+          visualData: 201.96029525293983/554.2809219619672/330/4/var(--node-color-3)/var(--grey-darkish)
   metadata:
     description: ""
     id: vbFE0FASEmltSxkm5z4N1
     title: MemGPTv2
-  plugins: []
+  plugins:
+    - id: openai
+      name: OpenAI
+      type: built-in

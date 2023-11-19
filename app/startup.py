@@ -72,7 +72,7 @@ setup = gr.Interface(
         ),
         gr.Dropdown(
             choices=choices.get("gptmodels"),
-            value=choices.get("gptmodels")[0],
+            value="gpt-4-1106-preview",
             label="GPT Model",
             info="Select the gpt model to be used",
         ),
@@ -95,7 +95,7 @@ def update_dropdown_choices():
         )
 
 def start_chat(configuration):
-    print(configuration)
+    gr.Info("Starting the conversation. Please wait")
     data = {
         "name": configuration,
         "message": "let's go",
@@ -108,32 +108,39 @@ def start_chat(configuration):
         headers={"Content-Type": "application/json"},
     )
     response = response.json()
-    if response.get("message") == "success":
-        gr.Info("Succesfully started the conversation. Please wait")
-        return gr.Textbox(interactive=True), gr.Button("Clear", interactive=True)
+    if response.get("status") == "success":
+        answer = f""" 
+            **Assistant** *({response.get("inner_monologue")})*
+            {response.get("message")}
+        """
+        return answer
     else:
-        gr.Warning(response.get("message"))
-        return False
+        gr.Warning(response.get("status"))
+        return None
 
 # Chat interface
 with gr.Blocks() as chat:
     chatbot = gr.Chatbot()
-    msg = gr.Textbox(interactive=False)
+    msg = gr.Textbox(interactive=False, value="Event: User logged in")
     clear = gr.Button("Clear", interactive=False)
 
     def user(user_message, history):
         return "", history + [[user_message, None]]
 
-    def bot(history):
-        bot_message = random.choice(["How are you?", "I love you", "I'm very hungry"])
-        time.sleep(2)
-        history[-1][1] = bot_message
-        return history
+    def bot(history, configuration):
+        bot_message = start_chat(configuration)
+        history [-1][1] = bot_message
+        return gr.Textbox(interactive=True), gr.Button("Clear", interactive=True), history
 
     msg.submit(user, [msg, chatbot], [msg, chatbot], queue=False).then(
         bot, chatbot, chatbot
     )
     clear.click(lambda: None, None, chatbot, queue=False)
+
+chat.queue()
+
+def hideStartChatting():
+    return gr.Dropdown(visible=False), gr.Button(visible=False)
 
 # Combined interface
 with gr.Blocks(title="Rivet-MemGPT") as combined:
@@ -153,9 +160,11 @@ with gr.Blocks(title="Rivet-MemGPT") as combined:
 
     # Events
     testTab.select(fn=update_dropdown_choices, inputs=None, outputs=[configuration_dropdown])
-    configuration_submit.click(fn=start_chat, inputs=[configuration_dropdown], outputs=[msg, clear])
-
-chat.queue()
+    configuration_submit.click(
+        user, [msg, chatbot], [msg, chatbot], queue=False
+            ).then(hideStartChatting, [], [configuration_dropdown, configuration_submit]
+                ).then(bot, [chatbot, configuration_dropdown], [msg, clear, chatbot])
+                                      
 
 # Launch interfaces
 combined.launch(inbrowser=True, show_api=False)

@@ -1,9 +1,10 @@
 import express from "express";
 import fs from "fs";
 import util from "util";
-import { storeConfiguration, retrieveConfigurations, retrieveData } from "./data";
-import { createSystemPrompt } from "./system_prompt";
-import { runRivet } from "./rivet_runner";
+import { storeConfiguration, retrieveConfigurations, retrieveData, storeLogin } from "./data.js";
+import { createSystemPrompt, createLoginMessage } from "./system_prompt.js";
+import { runRivet } from "./rivet_runner.js";
+import { updateAssistant } from "./openai_assistants.js";
 
 const readDir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
@@ -35,8 +36,14 @@ async function chatRequest(request) {
         const systemPrompt = await createSystemPrompt(data);
         const threadId = data["thread"]
         const assistantId = data["assistant"]
-        const response = runRivet(systemPrompt, threadId, assistantId, request.message, request.start)
-        return true;
+        const gptModel = data["gptmodel"]
+        const tools = JSON.parse(data["tool"])
+        // Update assistant each time as system prompt has dynamic content
+        await updateAssistant(assistantId, tools, systemPrompt)
+        const lastLogin = await storeLogin(request.name)
+        const loginMessage = await createLoginMessage(lastLogin)
+        const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools)
+        return response;
     } else {
         return false;
     }
@@ -85,15 +92,16 @@ export class serveApi {
             // chat = Converse with the llm. start is true, when the conversation is started
             app.post('/chat', async (req, res) => {
                 if(req.body.name && req.body.start && req.body.message) {
-                    const result = await chatRequest(req.body)
+                    let result = {}
+                    result = await chatRequest(req.body)
                     if(!result) {
-                        return res.status(400).send({ message: "Configuration does not exist" })
+                        return res.status(400).send({ status: "Configuration does not exist" })
                     } else {
                         // In this case we need to get rivet going!
-                        return res.status(200).send({ message: "success" })
+                        return res.status(200).send({ status: "success", ...result })
                     }
                 } else {
-                    return res.status(400).send({ message: "Mandatory fields are missing" })
+                    return res.status(400).send({ status: "Mandatory fields are missing" })
                 }
             })
 

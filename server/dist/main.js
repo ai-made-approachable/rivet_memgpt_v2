@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const api_1 = require("./api");
+import { serveApi } from './api.js';
 async function main() {
-    new api_1.serveApi();
+    new serveApi();
 }
 main();
 //# sourceMappingURL=main.js.map

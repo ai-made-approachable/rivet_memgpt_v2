@@ -1,7 +1,8 @@
 import sqlite3 from "sqlite3"
 import fs from "fs"
 import path from "path"
-import { createIds } from "./openai_assistants";
+import { createIds } from "./openai_assistants.js";
+import { get } from "http";
 
 let dbPath = "./data/databases";
 let filesPath = "./data"
@@ -57,7 +58,7 @@ async function checkDatabaseFile(name) {
     }
 }
 
-async function createTable(db) {
+async function createMetaTable(db) {
     const sql = `CREATE TABLE IF NOT EXISTS meta (human, persona, prompt, tool, gptmodel, thread, assistant)`;
 
     return new Promise<void>((resolve, reject) => {
@@ -75,7 +76,7 @@ async function createTable(db) {
 
 async function populateTable(db, data, ids) {
     const sql = `INSERT INTO meta (human, persona, prompt, tool, gptmodel, assistant, thread) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [data.human, data.persona, data.prompt, data.tool, data.gptmodel, ids["assistantId"], ids["threadId"]];
+    const params = [data.human, data.persona, data.prompt, JSON.stringify(data.tool), data.gptmodel, ids["assistantId"], ids["threadId"]];
 
     return new Promise((resolve, reject) => {
         db.run(sql, params, function (err) {
@@ -131,7 +132,7 @@ async function storeData(data) {
     // Create new database file and database entries
     const newPath = await createDatabaseFile(data.name)
     const db = await connectToDatabase(newPath)
-    await createTable(db)
+    await createMetaTable(db)
     // Retrieve content of the files before populating the database
     const content = await retrieveFileData(data)
     content["gptmodel"] = data.gptmodel
@@ -140,6 +141,63 @@ async function storeData(data) {
     console.log(ids)
     await populateTable(db, content, ids)
     await returnData(db)
+}
+
+async function getDatabaseConnection(name) {
+    const dirPath = `${dbPath}/${name}`;
+    const filePath = `${dirPath}/${name}.sql`;
+    const db = await connectToDatabase(filePath);
+    return db;
+}
+
+async function createLoginTable(db) {
+    const sql_create = `CREATE TABLE IF NOT EXISTS login (id INTEGER PRIMARY KEY AUTOINCREMENT, lastLogin TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+    await new Promise((resolve, reject) => {
+        db.run(sql_create, (err) => {
+            if (err) {
+                console.error('Could not create table', err);
+                reject(err);
+            } else {
+                resolve(void 0);
+            }
+        });
+    });
+
+    const sql_insert = `Insert into login (lastLogin) values (CURRENT_TIMESTAMP)`;
+    await new Promise((resolve, reject) => {
+        db.run(sql_insert, (err) => {
+            if (err) {
+                console.error('Could not insert data', err);
+                reject(err);
+            } else {
+                resolve(void 0);
+            }
+        });
+    });
+}
+
+async function getLastLogin(db) {
+    const checkTableSql = `SELECT name FROM sqlite_master WHERE type='table' AND name='login';`;
+    return new Promise((resolve, reject) => {
+        db.get(checkTableSql, [], (err, row) => {
+            if (err) {
+                reject(err);
+            } else if (row === undefined) {
+                resolve(null);
+            } else {
+                const sql = `SELECT lastLogin FROM login ORDER BY id DESC LIMIT 1`;
+                db.get(sql, [], (err, row) => {
+                    if (err) {
+                        reject(err);
+                    } else if (row === undefined) {
+                        resolve(null);
+                    } else {
+                        resolve(row.lastLogin);
+                    }
+                });
+            }
+        });
+    });
 }
 
 /*
@@ -165,9 +223,18 @@ export async function retrieveConfigurations() {
 }
 
 export async function retrieveData(name) {
-    const dirPath = `${dbPath}/${name}`;
-    const filePath = `${dirPath}/${name}.sql`;
-    const db = await connectToDatabase(filePath);
+    const db = await getDatabaseConnection(name)
     const data = await returnData(db); // Await the data from returnData
     return data;
+}
+
+export async function storeLogin(name) {
+    const db = await getDatabaseConnection(name)
+    const lastLogin = await getLastLogin(db)
+    if (!lastLogin) {
+        await createLoginTable(db)
+        return null
+    } else {
+        return lastLogin
+    }
 }

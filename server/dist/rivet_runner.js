@@ -1,28 +1,33 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.runRivet = void 0;
-const rivet_node_1 = require("@ironclad/rivet-node");
-const events_1 = require("events");
-events_1.EventEmitter.defaultMaxListeners = 20;
+import { runGraphInFile, startDebuggerServer } from '@ironclad/rivet-node';
+import { EventEmitter } from 'events';
+import { plugins, globalRivetNodeRegistry } from '@ironclad/rivet-node';
+globalRivetNodeRegistry.registerPlugin(plugins.openai);
+EventEmitter.defaultMaxListeners = 20;
 const project = './data/memGPTv2';
-const debuggerServer = (0, rivet_node_1.startDebuggerServer)({});
-async function runRivet(systemPrompt, threadId, assistantId, message, start) {
+const debuggerServer = startDebuggerServer({});
+export async function runRivet(threadId, assistantId, message, start, loginMessage, gptModel, tools) {
     const graph = 'OSUXYaAdV7-UHA0WIUDft';
     return new Promise(async (resolve, reject) => {
         try {
-            await (0, rivet_node_1.runGraphInFile)(project + '.rivet-project', {
+            await runGraphInFile(project + '.rivet-project', {
                 graph: graph,
                 remoteDebugger: debuggerServer,
                 inputs: {
-                    "system_prompt": systemPrompt,
                     "thread_id": threadId,
                     "assistant_id": assistantId,
                     "message": message,
-                    "start": start
+                    "start": start,
+                    "login_message": { "type": "object", "value": loginMessage },
+                    "model": gptModel,
+                    // "tools": { "type": "gpt-function[]", "value": tools },
                 },
                 context: {},
                 externalFunctions: {},
-                onUserEvent: {},
+                onUserEvent: {
+                    return_response: (data) => {
+                        resolve(data.value);
+                    }
+                },
                 openAiKey: process.env.OPENAI_API_KEY
             });
         }
@@ -31,5 +36,4 @@ async function runRivet(systemPrompt, threadId, assistantId, message, start) {
         }
     });
 }
-exports.runRivet = runRivet;
 //# sourceMappingURL=rivet_runner.js.map

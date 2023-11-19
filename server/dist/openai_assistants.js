@@ -1,11 +1,5 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createIds = void 0;
-const openai_1 = __importDefault(require("openai"));
-const client = new openai_1.default({
+import OpenAI from 'openai';
+const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 /*
@@ -15,7 +9,7 @@ async function createAssistant(name, gptmodel) {
     // Not passing in tools and instructions for now. Can be done later when running the thread as well
     // Instructions also change when data changes... so maybe generally not a good idea
     const response = await client.beta.assistants.create({
-        name: 'test-assistant',
+        name: 'memGpt_' + name,
         model: gptmodel,
         tools: [{ type: "code_interpreter" }]
     });
@@ -30,10 +24,16 @@ async function createThread() {
 /*
   External functions
 */
-async function createIds(name, gptmodel) {
+export async function createIds(name, gptmodel) {
     const assistantId = await createAssistant(name, gptmodel);
     const threadId = await createThread();
     return { assistantId, threadId };
 }
-exports.createIds = createIds;
+export async function updateAssistant(assistantId, tools, systemPrompt) {
+    const response = await client.beta.assistants.update(assistantId, {
+        instructions: systemPrompt,
+        tools: tools
+    });
+    return response;
+}
 //# sourceMappingURL=openai_assistants.js.map
