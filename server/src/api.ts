@@ -6,6 +6,10 @@ import { createSystemPrompt, createLoginMessage } from "./system_prompt.js";
 import { runRivet } from "./rivet_runner.js";
 import { updateAssistant } from "./openai_assistants.js";
 import { EventEmitter } from 'events';
+import { startRun } from "./openai_assistants.js";
+import { globalVars } from './globals.js';
+
+
 // Event emitter to be able to wait on user reply via webchat
 const eventEmitter = new EventEmitter();
 
@@ -41,12 +45,26 @@ async function chatRequest(request) {
         const assistantId = data["assistant"]
         const gptModel = data["gptmodel"]
         const tools = JSON.parse(data["tool"])
+        const start = request.start;
         // Update assistant each time as system prompt has dynamic content
         await updateAssistant(assistantId, tools, systemPrompt)
         const lastLogin = await storeLogin(request.name)
         const loginMessage = await createLoginMessage(lastLogin)
-        const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools, eventEmitter)
-        return response;
+        // Solution without rivet
+        // Wrap the event in a Promise
+        const sendMessageData = new Promise((resolve) => {
+            eventEmitter.once('sendMessageDataRetrievedStartTrue', (data) => {
+                console.log("sendMessageDateRetrieved triggered. Data: " + data);
+                resolve(data);
+            });
+        });
+        // Start a new run and don't wait for it and keep it running
+        startRun(threadId, gptModel, assistantId, loginMessage, eventEmitter)
+
+        // Solution using rivet
+        //const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools, eventEmitter)
+
+        return sendMessageData
     } else {
         return false;
     }
@@ -95,9 +113,10 @@ export class serveApi {
             // chat = Converse with the llm. start is true, when the conversation is started
             app.post('/chat', async (req, res) => {
                 if (req.body.name && req.body.message) {
+                    globalVars.start = req.body.start;
                     let result = {}
                     if (req.body.start) {
-                        result = await chatRequest(req.body)
+                        let result = await chatRequest(req.body);
                         if (!result) {
                             return res.status(400).send({ status: "Configuration does not exist" })
                         } else {
@@ -106,8 +125,14 @@ export class serveApi {
                         }
                     } else {
                         eventEmitter.emit('apiCallComplete', req.body.message);
-                        //result = await chatRequest(req.body)
-                        return res.status(200).send({ status: "success", ...result })
+                        const sendMessageData = new Promise((resolve) => {
+                            eventEmitter.on('sendMessageDataRetrievedStartFalse', (data) => {
+                                console.log("sendMessageDataRetrievedStartFalse triggered. Data: " + data);
+                                resolve(data);
+                            });
+                        });
+                        const resolvedData = await sendMessageData;
+                        return res.status(200).send({ status: "success", ...resolvedData })
                     }
                 } else {
                     return res.status(400).send({ status: "Mandatory fields are missing" })
