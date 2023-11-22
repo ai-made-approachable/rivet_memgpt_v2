@@ -1,6 +1,6 @@
 import { DelayNodeImpl } from '@ironclad/rivet-node'
 import OpenAI from 'openai'
-import { send_message, core_memory_append, core_memory_replace } from './handle_functions.js'
+import { send_message, core_memory_append, core_memory_replace, recall_memory_search_date } from './handle_functions.js'
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -100,6 +100,7 @@ async function performRunAction(requiredActionObject, eventEmitter, db) {
   for (const toolCall of toolCalls) {
     const functionName = toolCall.function.name
     const functionArguments = JSON.parse(toolCall.function.arguments)
+    console.log(functionArguments)
     const toolCallId = toolCall.id
     switch (functionName) {
       case 'archival_memory_insert':
@@ -125,11 +126,13 @@ async function performRunAction(requiredActionObject, eventEmitter, db) {
         console.log("Function: recall_memory_search")
         break;
       case 'recall_memory_search_date':
-        // Handle 'recall_memory_search_date'
-        console.log("Function: recall_memory_search_date")
+        const recallMemorySearchDate = await recall_memory_search_date(functionArguments, db)
+        const recallMemorySearchDateOutput = await wrapToolOutput(toolCallId, recallMemorySearchDate)
+        responses.push(recallMemorySearchDateOutput)
+        debugger;
         break;
       case 'send_message':
-        const sendMessage = await send_message(functionArguments, eventEmitter)
+        const sendMessage = await send_message(functionArguments, eventEmitter, db)
         const sendMessageOutput = await wrapToolOutput(toolCallId, sendMessage)
         responses.push(sendMessageOutput)
         break;

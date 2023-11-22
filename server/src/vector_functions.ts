@@ -4,6 +4,7 @@ import {
     SimpleDirectoryReader, 
     VectorIndexRetriever, 
     storageContextFromDefaults, 
+    OpenAIEmbedding
 } from "llamaindex"
 
 export async function readDocuments() {
@@ -24,3 +25,22 @@ export async function searchDocuments() {
     const retriever = new VectorIndexRetriever({ index: index, similarityTopK: 3 });
     const results = await retriever.retrieve("AirBnB");
 }
+
+/*
+export async function updateRecallMemoryIndex(role, message, timestamp) {
+const object = {
+    role: role,
+    message: message,
+    timestamp: timestamp
+}
+const storageContext = await storageContextFromDefaults({
+    persistDir: "./recallmemorytest",
+});
+const index = await VectorStoreIndex.init({
+storageContext: storageContext
+});
+doc = new Document(object, doc_id=timestamp)
+
+index.insert(JSON.stringify(object))
+}
+*/

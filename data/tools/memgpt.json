@@ -162,7 +162,7 @@
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end of the date range to search, in the format datetime, e.g. 2023-11-06T20:43:32.223Z."
+                        "description": "The end of the date range to search, in the format datetime, e.g. 2023-11-06T20:43:32.223Z. Must be bigger than start_date"
                     },
                     "page": {
                         "type": "integer",

@@ -149,6 +149,21 @@ async function getDatabaseConnection(name) {
     return db;
 }
 
+async function createRecallMemoryTable(db) {
+    const sql_create = `CREATE TABLE IF NOT EXISTS recall_memory (id INTEGER PRIMARY KEY AUTOINCREMENT, role TEXT, message TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
+    await new Promise((resolve, reject) => {
+        db.run(sql_create, (err) => {
+            if (err) {
+                console.error('Could not create table', err);
+                reject(err);
+            } else {
+                resolve(void 0);
+            }
+        });
+    });
+
+}
+
 async function createLoginTable(db) {
     const sql_create = `CREATE TABLE IF NOT EXISTS login (id INTEGER PRIMARY KEY AUTOINCREMENT, lastLogin TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`;
     await new Promise((resolve, reject) => {
@@ -199,9 +214,63 @@ async function getLastLogin(db) {
     });
 }
 
+function formatSQLiteDate(isoDateStr: string): string {
+    const date = new Date(isoDateStr);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 /*
     External functions
 */
+
+export async function updateRecallMemory(role, message, db) {
+    await createRecallMemoryTable(db)
+    const sql_insert = `INSERT INTO recall_memory (role, message) VALUES (?, ?)`;
+    const params = [role, message];
+    db.run(sql_insert, params, function (err) {
+        if (err) {
+            console.error(err.message);
+        } else {
+            console.log(`Added ${role} message to recall_memory`);
+        }
+    })
+}
+
+export async function recallMemorySearchDate(functionArguments, db) {
+    // Has no pagination yet! And no limitation to how many results are returned!
+    const sql_select = `SELECT * FROM recall_memory WHERE timestamp BETWEEN ? AND ?`;
+    // Fix timezone issues
+    const startDate = formatSQLiteDate(new Date(functionArguments.start_date).toISOString());
+    const endDate = formatSQLiteDate(new Date(functionArguments.end_date).toISOString());
+    const params = [startDate, endDate];
+    return new Promise((resolve, reject) => {
+        db.all(sql_select, params, (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject({success: false, result: `Could not find any messages between ${functionArguments.start_date} and ${functionArguments.end_date}`});
+            } else {
+                const resultObject = rows.map(row => {
+                    return {
+                        role: row.role,
+                        message: row.message,
+                        timestamp: row.timestamp
+                    }
+                })
+                resolve({ success: true, result: JSON.stringify(resultObject) });
+            }
+        });
+    });
+
+}
+
+
 export function updateCoreMemory(operation, functionArguments, db): Promise<boolean> {
     const object = functionArguments.name
     const sql_select = `SELECT ${object} FROM meta`;
