@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { send_message } from './handle_functions.js';
+import { send_message, core_memory_append, core_memory_replace } from './handle_functions.js';
 const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
@@ -68,7 +68,18 @@ async function wrapToolOutput(toolCallId, output) {
     };
     return toolOutput;
 }
-async function performRunAction(requiredActionObject, eventEmitter) {
+async function ListAndCancelRuns(threadId) {
+    const response = await client.beta.threads.runs.list(threadId);
+    const runIds = response.data.map((run) => run.id);
+    for (const runId of runIds) {
+        await cancelRun(threadId, runId);
+    }
+}
+async function getLastThreadMessage(threadId) {
+    const response = await client.beta.threads.messages.list(threadId);
+    return response.data[0];
+}
+async function performRunAction(requiredActionObject, eventEmitter, db) {
     const toolCalls = requiredActionObject.submit_tool_outputs.tool_calls;
     const responses = [];
     for (const toolCall of toolCalls) {
@@ -78,21 +89,29 @@ async function performRunAction(requiredActionObject, eventEmitter) {
         switch (functionName) {
             case 'archival_memory_insert':
                 // Handle 'archival_memory_insert'
+                console.log("Function: archival_memory_insert");
                 break;
             case 'archival_memory_search':
                 // Handle 'archival_memory_search'
+                console.log("Function: archival_memory_search");
                 break;
             case 'core_memory_append':
-                // Handle 'core_memory_append'
+                const coreMemoryAppend = await core_memory_append(functionArguments, db);
+                const coreMemoryAppendOutput = await wrapToolOutput(toolCallId, coreMemoryAppend);
+                responses.push(coreMemoryAppendOutput);
                 break;
             case 'core_memory_replace':
-                // Handle 'core_memory_replace'
+                const coreMemoryReplace = await core_memory_replace(functionArguments, db);
+                const coreMemoryReplaceOutput = await wrapToolOutput(toolCallId, coreMemoryReplace);
+                responses.push(coreMemoryReplaceOutput);
                 break;
             case 'recall_memory_search':
                 // Handle 'recall_memory_search'
+                console.log("Function: recall_memory_search");
                 break;
             case 'recall_memory_search_date':
                 // Handle 'recall_memory_search_date'
+                console.log("Function: recall_memory_search_date");
                 break;
             case 'send_message':
                 const sendMessage = await send_message(functionArguments, eventEmitter);
@@ -121,7 +140,9 @@ export async function updateAssistant(assistantId, tools, systemPrompt) {
     });
     return response;
 }
-export async function startRun(threadId, model, assistantId, message, eventEmitter) {
+export async function startRun(threadId, model, assistantId, message, eventEmitter, db) {
+    // Close old runs first. Otherwise openai might refuse to create a new one
+    await ListAndCancelRuns(threadId);
     await attachMessageToThread(message, threadId);
     const runId = await createRun(threadId, model, assistantId);
     console.log("Run: " + runId + " started");
@@ -131,7 +152,7 @@ export async function startRun(threadId, model, assistantId, message, eventEmitt
         let runStatus = await retrieveRun(threadId, runId);
         console.log(runStatus.status);
         if (['requires_action'].includes(runStatus.status)) {
-            const toolOutputs = await performRunAction(runStatus.required_action, eventEmitter);
+            const toolOutputs = await performRunAction(runStatus.required_action, eventEmitter, db);
             await submitToolsOutput(threadId, runId, toolOutputs);
         }
         else if (['expired', 'failed'].includes(runStatus.status)) {
@@ -139,7 +160,20 @@ export async function startRun(threadId, model, assistantId, message, eventEmitt
             break;
         }
         else if (runStatus.status === 'completed') {
-            console.log("Run completed");
+            // This means that the assistant did not use a function = tried to directly talk to the user.
+            const lastMessage = await getLastThreadMessage(threadId);
+            console.log("Run completed = no function call... Response:" + JSON.stringify(lastMessage));
+            // We need to fix this. 1. Create a new message informing about the error, 2. restarting the run
+            message = {
+                "success": "error",
+                "message": "The user did not get your response. The user can only hear you if you use the 'send_message' function. Please try again."
+            };
+            debugger;
+            startRun(threadId, model, assistantId, message, eventEmitter, db);
+            break;
+        }
+        else if (runStatus.status === 'cancelled') {
+            console.log("Run cancelled");
             break;
         }
     }

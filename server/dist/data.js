@@ -93,7 +93,6 @@ async function returnData(db) {
                 reject(err);
             }
             else {
-                console.log(row);
                 resolve(row); // Resolve with the row data
             }
         });
@@ -195,6 +194,38 @@ async function getLastLogin(db) {
 /*
     External functions
 */
+export function updateCoreMemory(operation, functionArguments, db) {
+    const object = functionArguments.name;
+    const sql_select = `SELECT ${object} FROM meta`;
+    return new Promise((resolve, reject) => {
+        db.get(sql_select, [], (err, row) => {
+            if (err) {
+                console.error(err.message);
+                reject(false);
+            }
+            else {
+                let content = row[object];
+                if (operation === "append") {
+                    content += `\n${functionArguments.content}`;
+                }
+                else if (operation === "replace") {
+                    content = content.replace(functionArguments.old_content, functionArguments.new_content);
+                }
+                const sql_update = `UPDATE meta SET ${object} = ?`;
+                db.run(sql_update, [content], function (err) {
+                    if (err) {
+                        console.error(err.message);
+                        reject(false);
+                    }
+                    else {
+                        console.log(`Row(s) updated: ${this.changes}`);
+                        resolve(true);
+                    }
+                });
+            }
+        });
+    });
+}
 export async function storeConfiguration(data) {
     const filePath = await checkDatabaseFile(data.name);
     if (filePath === true) {
@@ -216,7 +247,7 @@ export async function retrieveConfigurations() {
 export async function retrieveData(name) {
     const db = await getDatabaseConnection(name);
     const data = await returnData(db); // Await the data from returnData
-    return data;
+    return { data, db };
 }
 export async function storeLogin(name) {
     const db = await getDatabaseConnection(name);

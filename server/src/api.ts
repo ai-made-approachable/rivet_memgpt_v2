@@ -38,7 +38,7 @@ async function chatRequest(request) {
     const configs = await retrieveConfigurations();
     if (configs.includes(request.name)) {
         // Wait for the data to be retrieved before proceeding
-        const data = await retrieveData(request.name);
+        const { data, db } = await retrieveData(request.name);
         // Now call createSystemPrompt with the retrieved data
         const systemPrompt = await createSystemPrompt(data);
         const threadId = data["thread"]
@@ -59,7 +59,7 @@ async function chatRequest(request) {
             });
         });
         // Start a new run and don't wait for it and keep it running
-        startRun(threadId, gptModel, assistantId, loginMessage, eventEmitter)
+        startRun(threadId, gptModel, assistantId, loginMessage, eventEmitter, db)
 
         // Solution using rivet
         //const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools, eventEmitter)
