@@ -103,6 +103,10 @@
                         "type": "string",
                         "description": "Your reasoning to use this function."
                     },
+                    "name": {
+                        "type": "string",
+                        "description": "Section of the memory to be searched (human or general)"
+                    },
                     "query": {
                         "type": "string",
                         "description": "String to search for."
@@ -114,6 +118,7 @@
                 },
                 "required": [
                     "inner_monologue",
+                    "name",
                     "query",
                     "page"
                 ]
@@ -190,6 +195,10 @@
                         "type": "string",
                         "description": "Your reasoning to use this function."
                     },
+                    "name": {
+                        "type": "string",
+                        "description": "Section of the memory. You can only insert into human section (e.g. human)"
+                    },
                     "content": {
                         "type": "string",
                         "description": "Content to write to the memory. All unicode (including emojis) are supported."
@@ -197,6 +206,7 @@
                 },
                 "required": [
                     "inner_monologue",
+                    "name",
                     "content"
                 ]
             }

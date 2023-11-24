@@ -46,12 +46,12 @@ async function chatRequest(request) {
         // Wrap the event in a Promise
         const sendMessageData = new Promise((resolve) => {
             eventEmitter.once('sendMessageDataRetrievedStartTrue', (data) => {
-                console.log("sendMessageDateRetrieved triggered. Data: " + data);
+                //console.log("sendMessageDateRetrieved triggered. Data: " + JSON.stringify(data));
                 resolve(data);
             });
         });
         // Start a new run and don't wait for it and keep it running
-        startRun(threadId, gptModel, assistantId, loginMessage, eventEmitter, db);
+        startRun(threadId, gptModel, assistantId, loginMessage, eventEmitter, db, request.name);
         // Solution using rivet
         //const response = await runRivet(threadId, assistantId, request.message, request.start, loginMessage, gptModel, tools, eventEmitter)
         return sendMessageData;
@@ -75,7 +75,7 @@ export class serveApi {
             // configs = get all available configurations
             app.get('/configs', async (req, res) => {
                 const configs = await retrieveConfigurations();
-                console.log(configs);
+                //console.log(configs)
                 return res.status(200).send({ configs });
             });
             // save = create new configuration + database + thread/assistant... needs to be renamed
@@ -113,7 +113,6 @@ export class serveApi {
                         eventEmitter.emit('apiCallComplete', req.body.message);
                         const sendMessageData = new Promise((resolve) => {
                             eventEmitter.on('sendMessageDataRetrievedStartFalse', (data) => {
-                                console.log("sendMessageDataRetrievedStartFalse triggered. Data: " + data);
                                 resolve(data);
                             });
                         });

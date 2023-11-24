@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { send_message, core_memory_append, core_memory_replace, recall_memory_search_date } from './handle_functions.js';
+import { send_message, core_memory_append, core_memory_replace, recall_memory_search_date, recall_memory_search, archival_memory_search, archival_memory_insert, } from './handle_functions.js';
 const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
@@ -43,11 +43,11 @@ async function createRun(threadId, model, assistantId) {
 async function cancelRun(threadId, runId) {
     try {
         const response = await client.beta.threads.runs.cancel(threadId, runId);
-        console.log("Run was cancelled");
+        //console.log("Run was cancelled")
         return response;
     }
     catch (error) {
-        console.log("Run was not cancelled");
+        //console.log("Run was not cancelled")
         return error;
     }
 }
@@ -59,7 +59,7 @@ async function submitToolsOutput(threadId, runId, toolOutputs) {
     const response = await client.beta.threads.runs.submitToolOutputs(threadId, runId, {
         tool_outputs: toolOutputs
     });
-    console.log(response);
+    //console.log(response)
 }
 async function wrapToolOutput(toolCallId, output) {
     const toolOutput = {
@@ -79,7 +79,7 @@ async function getLastThreadMessage(threadId) {
     const response = await client.beta.threads.messages.list(threadId);
     return response.data[0];
 }
-async function performRunAction(requiredActionObject, eventEmitter, db) {
+async function performRunAction(requiredActionObject, eventEmitter, db, name) {
     const toolCalls = requiredActionObject.submit_tool_outputs.tool_calls;
     const responses = [];
     for (const toolCall of toolCalls) {
@@ -89,12 +89,14 @@ async function performRunAction(requiredActionObject, eventEmitter, db) {
         const toolCallId = toolCall.id;
         switch (functionName) {
             case 'archival_memory_insert':
-                // Handle 'archival_memory_insert'
-                console.log("Function: archival_memory_insert");
+                const archivalMemoryInsert = await archival_memory_insert(functionArguments, name);
+                const archivalMemoryInsertOutput = await wrapToolOutput(toolCallId, archivalMemoryInsert);
+                responses.push(archivalMemoryInsertOutput);
                 break;
             case 'archival_memory_search':
-                // Handle 'archival_memory_search'
-                console.log("Function: archival_memory_search");
+                const archivalMemorySearch = await archival_memory_search(functionArguments, name);
+                const archivalMemorySearchOutput = await wrapToolOutput(toolCallId, archivalMemorySearch);
+                responses.push(archivalMemorySearchOutput);
                 break;
             case 'core_memory_append':
                 const coreMemoryAppend = await core_memory_append(functionArguments, db);
@@ -107,17 +109,17 @@ async function performRunAction(requiredActionObject, eventEmitter, db) {
                 responses.push(coreMemoryReplaceOutput);
                 break;
             case 'recall_memory_search':
-                // Handle 'recall_memory_search'
-                console.log("Function: recall_memory_search");
+                const recallMemorySearch = await recall_memory_search(functionArguments, name);
+                const recallMemorySearchOutput = await wrapToolOutput(toolCallId, recallMemorySearch);
+                responses.push(recallMemorySearchOutput);
                 break;
             case 'recall_memory_search_date':
                 const recallMemorySearchDate = await recall_memory_search_date(functionArguments, db);
                 const recallMemorySearchDateOutput = await wrapToolOutput(toolCallId, recallMemorySearchDate);
                 responses.push(recallMemorySearchDateOutput);
-                debugger;
                 break;
             case 'send_message':
-                const sendMessage = await send_message(functionArguments, eventEmitter, db);
+                const sendMessage = await send_message(functionArguments, eventEmitter, db, name);
                 const sendMessageOutput = await wrapToolOutput(toolCallId, sendMessage);
                 responses.push(sendMessageOutput);
                 break;
@@ -143,19 +145,19 @@ export async function updateAssistant(assistantId, tools, systemPrompt) {
     });
     return response;
 }
-export async function startRun(threadId, model, assistantId, message, eventEmitter, db) {
+export async function startRun(threadId, model, assistantId, message, eventEmitter, db, name) {
     // Close old runs first. Otherwise openai might refuse to create a new one
     await ListAndCancelRuns(threadId);
     await attachMessageToThread(message, threadId);
     const runId = await createRun(threadId, model, assistantId);
-    console.log("Run: " + runId + " started");
+    // console.log("Run: " + runId + " started")
     // Do the loop of fetching the runs status
     while (true) {
         await delay(500);
         let runStatus = await retrieveRun(threadId, runId);
         console.log(runStatus.status);
         if (['requires_action'].includes(runStatus.status)) {
-            const toolOutputs = await performRunAction(runStatus.required_action, eventEmitter, db);
+            const toolOutputs = await performRunAction(runStatus.required_action, eventEmitter, db, name);
             await submitToolsOutput(threadId, runId, toolOutputs);
         }
         else if (['expired', 'failed'].includes(runStatus.status)) {
@@ -172,7 +174,7 @@ export async function startRun(threadId, model, assistantId, message, eventEmitt
                 "message": "The user did not get your response. The user can only hear you if you use the 'send_message' function. Please try again."
             };
             debugger;
-            startRun(threadId, model, assistantId, message, eventEmitter, db);
+            startRun(threadId, model, assistantId, message, eventEmitter, db, name);
             break;
         }
         else if (runStatus.status === 'cancelled') {

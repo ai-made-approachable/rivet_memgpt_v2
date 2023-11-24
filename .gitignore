@@ -10,3 +10,5 @@
 .DS_Store
 /storage/*
 /data/databases/*
+/data/humans/robert.txt
+/data/personas/natascha.txt

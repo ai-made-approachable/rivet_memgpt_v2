@@ -137,12 +137,12 @@ def getAudioPlayback(message):
 
 # Chat interface
 with gr.Blocks() as chat:
-    chatbot = gr.Chatbot(height=600)
+    chatbot = gr.Chatbot()
     with gr.Row():
         
         with gr.Column(scale=8):
             msg = gr.Textbox(interactive=False, value="Event: User logged in", scale=7)
-            audio_input = gr.Audio(sources=["microphone"], label="Speak", type="filepath", interactive=False)
+            audio_input = gr.Audio(sources=["microphone"], label="Speak", type="filepath", interactive=True)
         with gr.Column(scale=2):
             chat_submit = gr.Button("Submit", interactive=False, scale=2)
 
@@ -181,10 +181,10 @@ def audioInputToTextbox(audio_input):
     return gr.Textbox(value=transcript.text)
 
 # Combined interface
-with gr.Blocks(title="Rivet-MemGPT", css="footer{display:none !important}") as combined:
-    gr.Markdown(
-        """# Welcome to Rivet-MemGPT"""
-    )
+with gr.Blocks(title="MemGPT like AI chatbot", css="footer{display:none !important}") as combined:
+    #gr.Markdown(
+    #    """# MemGPT like AI chatbot"""
+    #)
     with gr.Tab("Create new configuration"):
         setup.render()
     with gr.Tab("Start chatting") as testTab:
@@ -222,4 +222,4 @@ with gr.Blocks(title="Rivet-MemGPT", css="footer{display:none !important}") as c
     #)                          
 
 # Launch interfaces
-combined.launch(inbrowser=False, show_api=False)
+combined.launch(inbrowser=False, show_api=False, share=False)

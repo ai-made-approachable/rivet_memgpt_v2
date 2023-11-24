@@ -39,7 +39,7 @@ async function connectToDatabase(path) {
                 console.error('Could not connect to database', err);
                 reject(err);
             } else {
-                console.log('Connected to database');
+                //console.log('Connected to database');
                 resolve(db);
             }
         });
@@ -137,7 +137,7 @@ async function storeData(data) {
     content["gptmodel"] = data.gptmodel
     // Get thread id from rivet. Then extend variables passed to populateTable by thread id
     const ids = await createIds(data.name, data.gptmodel)
-    console.log(ids)
+    //console.log(ids)
     await populateTable(db, content, ids)
     await returnData(db)
 }
@@ -238,7 +238,7 @@ export async function updateRecallMemory(role, message, db) {
         if (err) {
             console.error(err.message);
         } else {
-            console.log(`Added ${role} message to recall_memory`);
+            //console.log(`Added ${role} message to recall_memory`);
         }
     })
 }
@@ -293,7 +293,7 @@ export function updateCoreMemory(operation, functionArguments, db): Promise<bool
                         console.error(err.message);
                         reject(false);
                     } else {
-                        console.log(`Row(s) updated: ${this.changes}`);
+                        //console.log(`Row(s) updated: ${this.changes}`);
                         resolve(true);
                     }
                 });
