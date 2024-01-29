@@ -3,6 +3,8 @@ This project is a rough reconstruction of the core functions of the MemGPT proje
 - Chat interface with voice input and output
 - Use of the OpenAI Assistants API (enables, among other things, automatic management of chat history)
 
+Note: The project name is misleading by now. It was planned to include parts in Rivet (a visual programming tool), but in the end it was done fully in code.
+
 ## Technical Overview
 - Node.js/TypeScript backend (/server/src/) manages all communication with the OpenAI API and provides an express API interface
 - Python frontend (gradio) for the chat interface and voice input and output
